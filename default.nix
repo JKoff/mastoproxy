@@ -6,8 +6,8 @@ pkgs.crystal.buildCrystalPackage {
   src = fetchFromGitHub {
     owner = "JKoff";
     repo = "mastoproxy";
-    rev = "placeholder";
-    hash = "placeholder";
+    rev = "c039ed5";
+    hash = "c039ed5d17ec32997406912615bfd1579a61ef6b";
   };
   crystal = pkgs.crystal;
   shardsFile = ./shards.nix;
