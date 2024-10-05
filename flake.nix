@@ -12,6 +12,7 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
+        packages.default = ./default.nix;
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             crystal
