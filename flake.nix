@@ -12,7 +12,15 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
-        packages.default = ./default.nix;
+        packages.default = pkgs.crystal.buildCrystalPackage {
+          pname = "mastoproxy";
+          version = "0.1.0";
+          src = ./.;
+          crystal = pkgs.crystal;
+          shardsFile = ./shards.nix;
+          crystalBinaries.mastoproxy.src = "src/main.cr";
+        };
+
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             crystal
