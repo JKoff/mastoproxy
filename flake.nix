@@ -22,6 +22,7 @@
             zlib
             libyaml
             pcre
+            sqlite
           ];
 
           shellHook = ''
