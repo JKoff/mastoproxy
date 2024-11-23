@@ -14,6 +14,7 @@
       {
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
+            # Used by crystal server.
             crystal
             shards
             pkg-config
@@ -23,6 +24,9 @@
             libyaml
             pcre
             sqlite
+
+            # Used by next.js server.
+            nodejs_22
           ];
 
           shellHook = ''

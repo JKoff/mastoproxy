@@ -8,6 +8,11 @@ require "../../src/database"
 require "../../src/persistor"
 require "../../src/webserver"
 
+def write(test_port : Int, payload : NamedTuple)
+  client = HTTP::Client.new("localhost", test_port)
+  response = client.post("/record", body: payload.to_json, headers: HTTP::Headers{"Content-Type" => "application/json"})
+end
+
 describe "Server Integration Test" do
   test_db_path = Path["./test_data.sqlite3"]
   test_port = -1
@@ -71,9 +76,27 @@ describe "Server Integration Test" do
   end
 
   it "should handle GET request to /N1wEqlYlnsMy6fCANbX4qg==" do
-    DB.open "sqlite3://#{test_db_path}" do |db|
-      db.exec("INSERT INTO sessions (session_id, build) VALUES (?, ?)", "test_session", 999999)
-    end
+    write(test_port, {
+      session_id: "test_session",
+      seq_id: 0,
+      client_time_msec: 1234567890,
+      buffer: [
+        {
+          type: "SessionInit",
+          seq_id: 123,
+          client_time_msec: 1234567890,
+          payload: {
+            build: 1,
+            is_debug_build: false,
+            static_memory_usage: 1000,
+            static_memory_peak_usage: 2000,
+            platform_name: "test_platform",
+            mobile_model_name: "test_model",
+            locale: "en-US"
+          }
+        }
+      ]
+    })
 
     client = HTTP::Client.new("localhost", test_port)
     
@@ -81,6 +104,7 @@ describe "Server Integration Test" do
     
     response.status_code.should eq(200)
     response.body.should contain("test_session")
+    response.body.should contain("123")
   end
 
   it "should return 404 for unknown routes" do

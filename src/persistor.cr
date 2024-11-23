@@ -16,11 +16,13 @@ class Persistor
           sync = JSON.parse to_persist
           events = sync["buffer"].as_a
           DB.open "sqlite3://#{@database_path}" do |db|
-            db.exec "insert into writes values (?, ?, ?, ?)",
+            db.exec "insert or ignore into writes values (?, ?, ?, ?, ?, ?)",
               sync["session_id"].as_s,
               sync["seq_id"].as_i,
               sync["client_time_msec"].as_i,
-              to_persist.size()
+              to_persist.size(),
+              Time.utc.to_unix_ms,
+              to_persist
             events.each do |event|
               payload = event["payload"]
               if event["type"].as_s == "Game.SaveFileId"
@@ -42,13 +44,16 @@ class Persistor
                   payload["mobile_model_name"].as_s,
                   payload["locale"].as_s
               end
-              db.exec "insert into events values (?, ?, ?, ?, ?, ?)",
+              maybe_level_id_any = payload["level_id"]?
+              maybe_level_id = maybe_level_id_any.as_i if maybe_level_id_any
+              db.exec "insert into events values (?, ?, ?, ?, ?, ?, ?)",
                 sync["session_id"].as_s,
                 event["seq_id"].as_i,
                 event["client_time_msec"].as_i,
                 sync["client_time_msec"].as_i,
                 event["type"].as_s,
-                payload.to_s
+                payload.as_h.to_json,
+                maybe_level_id
             end
           end
         rescue e

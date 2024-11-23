@@ -8,9 +8,10 @@ class Database
   def setup
     DB.open "sqlite3://#{@path}" do |db|
       db.exec "create table if not exists save_files (
-        save_file_id text primary key,
+        save_file_id text,
         session_id text,
-        version int
+        version int,
+        primary key(save_file_id, session_id)
       )"
       db.exec "create table if not exists sessions (
         session_id text primary key,
@@ -31,6 +32,7 @@ class Database
         log_sent_client_time_msec int,
         event_type text,
         event text,
+        level_id text,  /* nullable */
         primary key(session_id, seq_id)
       )"
       db.exec "create table if not exists writes (
@@ -38,7 +40,13 @@ class Database
         seq_id int,
         log_sent_client_time_msec int,
         payload_size_bytes int,
+        write_server_time_msec int,
+        payload text,
         primary key(session_id, seq_id)
+      )"
+      db.exec "create table if not exists kvs (
+        key text primary key,
+        value int
       )"
     end
   end
